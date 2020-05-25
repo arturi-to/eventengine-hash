@@ -33,36 +33,45 @@ AWS Services
 - SQS queue
 - DynamoDB table
 - Cognito identity pool
+- Lambda function
   
-(Optional) Instructor can updated this parameters which are set as defaults in CloudFormation template:
+Before creating the CloudFormation stack, instructor will need to upload the lambda.zip file provided in this repo to a S3 bucket, it could be a pre-existant bucket or a new one created for this project.
 
+This are the CloudFomation Parameters that would need to be provided:
+
+- Lambda code repository S3 bucket
+- Lambda zip file S3 key (e.g. lambda.zip)
 - Cognito Identity Pool Name
 - DynamoDB table Name
 - SQS queue Name
 
+
 ### Load hashes file to the SQS queue
 
-A python script file 'sendmessages.py' is included in the repo to upload the hashes file to the SQS queue
+Download the CSV file from Event Engine event and save hashes in a TXT file unformatted with no header.
+Instructor could use the same S3 bucket used to store the lambda code zip file to upload the TXT hashes file.
+Before uploading the hashes TXT file bucket need to be configured to receive events notifications, such as a the hashes file upload action.
 
-Usage instructions:
+S3 bucket Event configuration using the console
 
-Pre-requisites:
-- Local AWS CLI credentials
-- boto3 installed locally
-- Python 3 installed
-- SQS queue URL (SQS queue deployed with the CloudFormation template)
-- Hashes file downloaded from Event Engine event, file needs to be a non-formatted TXT file with no headers
+1. Services -> S3
+2. Click on the bucket you will use to upload the hashes TXT files
+3. Click on the "Properties" tab
+4. Click on events
+5. Click on "+ Add notification"
+6. Enter a Name (e.g. "ee-hashfile-event")
+7. Mark "All object create events"
+8. Display the options in the "Send to" combo and select "Lambda Function"
+9. Display the options in the "Lambda" combo and select "ee-read-hash-file-1" (This is the Lambda function created with CloudFormation)
+10. Click "Save"
 
-Run the python script:
-```
-$ python3 sendmessages.py https://sqs.us-east-1.amazonaws.com/<ACCOUNT>/<SQS-queue-name> <hashes TXT file path>
-```
-e.g. 
-```
-$ python3 sendmessages.py https://sqs.us-east-1.amazonaws.com/123456789012/myhashmessages.fifo hashListExampleFile.txt
-```
+Now instructor can upload the hashes TXT file to the S3 bucket
 
 Important: Do not re-send file, it will duplicate hashes on SQS queue
+
+Upload hashes file workflow diagram: 
+
+![upload-hashes-s3](https://github.com/gcanales75/eventengine-hash/blob/master/readmeImages/ee-hash-instructor.png)
 
 ### Application
 
