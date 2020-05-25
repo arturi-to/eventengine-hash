@@ -1,0 +1,131 @@
+{
+    "AWSTemplateFormatVersion":"2010-09-09",
+    "Description":"This template deploys Event Engine Get-Hash web portal AWS services",
+    "Parameters":{
+        "CognitoIdentityPoolName":{
+            "Type":"String",
+            "Default":"eeGetHash",
+            "Description":"Cognito Identity Pool Name"
+        },
+        "DynamoDBTableName":{
+            "Type":"String",
+            "Default":"ee-hash",
+            "Description":"DynamoDB table Name"
+        },
+        "SqsQueueName":{
+            "Type":"String",
+            "Default":"ee-hash.fifo",
+            "Description":"SQS queue Name"
+        }
+    },
+    "Resources":{
+        "CognitoIdentityPoolUnauthRole" : {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "RoleName" : "Cognito_eeGetHashUnauth_Role-1",
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": { "Federated": "cognito-identity.amazonaws.com" },
+                            "Action": [
+                                "sts:AssumeRoleWithWebIdentity"
+                            ],
+                            "Condition": {
+                                "StringEquals": {
+                                    "cognito-identity.amazonaws.com:aud": { "Ref" : "CognitoIdentityPool" }
+                                },
+                                "ForAnyValue:StringLike": {
+                                    "cognito-identity.amazonaws.com:amr": "unauthenticated"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "cognitoOneClickUnathPolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "mobileanalytics:PutEvents",
+                                        "cognito-sync:*",
+                                        "sqs:*",
+                                        "dynamodb:*"
+                                    ],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "CognitoIdentityPool" : {
+            "Type" : "AWS::Cognito::IdentityPool",
+            "Properties" : {
+                "AllowUnauthenticatedIdentities" : true,
+                "IdentityPoolName" : { "Ref" : "CognitoIdentityPoolName" }
+            }
+        },
+        "CognitoUnauthRoleAttachment" : {
+            "Type" : "AWS::Cognito::IdentityPoolRoleAttachment",
+            "Properties" : {
+                "IdentityPoolId" : { "Ref" : "CognitoIdentityPool" },
+                "Roles" : {
+                    "unauthenticated":{
+                        "Fn::GetAtt" : [ "CognitoIdentityPoolUnauthRole", "Arn" ]
+                    }
+                }
+            }
+        },
+        "DynamoDbHashTable" : {
+            "Type" : "AWS::DynamoDB::Table",
+            "Properties" : {
+                "KeySchema" : [
+                    { 
+                        "AttributeName" : "hash",
+                        "KeyType" : "HASH" 
+                    }
+                ],
+                "AttributeDefinitions" : [
+                    {
+                        "AttributeName" : "hash",
+                        "AttributeType" : "S"
+                    }
+                ],
+                "ProvisionedThroughput" : {
+                    "ReadCapacityUnits" : 5,
+                    "WriteCapacityUnits" : 5
+                },
+                "TableName" : { "Ref" : "DynamoDBTableName" }
+            }
+        },
+        "SqsQueue": {
+            "Type" : "AWS::SQS::Queue",
+            "Properties" : {
+                "ContentBasedDeduplication" : false,
+                "FifoQueue" : true,
+                "QueueName" : { "Ref" : "SqsQueueName" }
+            }
+        }         
+    },                 
+    "Outputs" : {
+        "CognitoIdentityPoolId" : {
+            "Description": "Cognito Identity Pool ID",
+            "Value" : { "Ref" : "CognitoIdentityPool" }
+        },
+        "DynamoDbTableName": {
+            "Description": "DynamoDB Table Name",
+            "Value" : { "Ref" : "DynamoDbHashTable" }
+        },
+        "SQSqueueUrl": {
+            "Description": "SQS queue URL",
+            "Value" : { "Ref" : "SqsQueue" }
+        }
+    }
+}

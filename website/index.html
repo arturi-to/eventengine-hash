@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>AWS STP Containers Training</title>
+
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/unicons.css">
+    <link rel="stylesheet" href="css/owl.carousel.min.css">
+    <link rel="stylesheet" href="css/owl.theme.default.min.css">
+
+    <!-- MAIN STYLE -->
+    <link rel="stylesheet" href="css/tooplate-style.css">
+    
+<!--
+
+LATAM Parter Training Team \m/
+
+-->
+  </head>
+  <body>
+
+    <!-- ABOUT -->
+    <section class="about full-screen d-lg-flex justify-content-center align-items-center" id="about">
+        <div class="container">
+            <div class="row">
+                
+                <div class="col-lg-7 col-md-12 col-12 d-flex align-items-center">
+                    <div class="about-text">
+                        <h1 class="animated animated-text">
+                            <span class="mr-2">Welcome to the STP Training "Containers on AWS"</span>
+                        </h1>
+                        <p>Para obtener su hash de acceso al laboratorio introduzca el correo electrónico utilizado para registrarse al entrenamiento</p>
+                        <body>
+                            <div id="textToSynth">
+                              <input autofocus size="23" type="text" id="textEntry" value=""/>
+                              <button class="btn default" onClick="getHash()">Enviar</button>
+                              <p id="result"></p>
+                            </div>
+                            <p id="demo"></p>
+                        <p> </p>
+                    </div>
+                </div>
+
+                <div class="col-lg-5 col-md-12 col-12">
+                    <div class="about-image svg">
+                        <img src="images/undraw/aws-training.png" class="img-fluid" alt="svg image">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.683.0.min.js"></script>
+    <script type="text/javascript">
+
+    // Set Variables
+    var sqsQueueUrl = 'SQS queue URL' // SQS queue URL [EDIT]
+    var dynamoDbTable = 'DynamoDB Table Name' // DynamoDB table [EDIT]
+    var cognitoIdPoolId = 'Cognito Identity Pool ID' // Cognito Identity Pool ID [EDIT]
+
+      // Initialize the Amazon Cognito credentials provider
+      AWS.config.region = 'us-east-1'; // Region
+      AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+        IdentityPoolId: cognitoIdPoolId,
+      });
+
+        // Create an AWS services objects
+        var sqs = new AWS.SQS({apiVersion: '2012-11-05'});
+        var dynamodb = new AWS.DynamoDB();
+        
+            var queueParams = {
+                QueueUrl: sqsQueueUrl, /* required */
+                MaxNumberOfMessages: '1'
+            };
+
+            // Function invoked by button click
+            function getHash() {
+                var hash = sqs.receiveMessage(queueParams, function(err, data) {
+                if (err) console.log(err, err.stack); // an error occurred
+                else     console.log(data);           // successful response
+                var value = JSON.stringify(data);
+                const hashvale = JSON.parse(value);
+                hashvalue = hashvale.Messages[0].Body
+                document.getElementById("demo").innerHTML = 'Su hash de acceso al laboratorio es: '+hashvalue;
+                msgHandle = hashvale.Messages[0].ReceiptHandle
+                var participantEmail = document.getElementById("textEntry").value;
+                var dynamodbParams = { Item: { "hash": { S: hashvalue }, "email": { S: participantEmail }, }, TableName: dynamoDbTable };
+                var dynamo = dynamodb.putItem(dynamodbParams, function(err, data) { if (err) console.log(err, err.stack); else     console.log(data);})
+                // Delete SQS message
+                var sqsMsgParams = { QueueUrl: sqsQueueUrl, ReceiptHandle: msgHandle }
+                var deletemsg = sqs.deleteMessage(sqsMsgParams, function(err, data) { if (err) console.log(err, err.stack); else     console.log(data);})
+                })
+                };
+    </script>
+
+    <!-- FOOTER -->
+     <footer class="footer py-5">
+          <div class="container">
+               <div class="row">
+
+                    <div class="col-lg-12 col-12">                                
+                        <p class="copyright-text text-center">© 2020, Amazon Web Services, Inc. or its affiliates. All rights reserved.</p>
+                        <p class="copyright-text text-center">Powered by <a rel="nofollow" href="https://aws.amazon.com/es/partners/training/latam">LATAM Partner Training Team</a></p>
+
+                    </div>
+               </div>
+          </div>
+     </footer>
+  </body>
+</html>
