@@ -16,6 +16,16 @@
             "Type":"String",
             "Default":"ee-hash.fifo",
             "Description":"SQS queue Name"
+        },
+        "CodeRepoS3Bucket":{
+            "Type":"String",
+            "Default":"",
+            "Description":"Lambda code repository S3 bucket"
+        },
+        "CodeRepoS3Key":{
+            "Type":"String",
+            "Default":"lambda.zip",
+            "Description":"Lambda zip file S3 key (e.g. lambda.zip)"
         }
     },
     "Resources":{
@@ -112,6 +122,59 @@
                 "FifoQueue" : true,
                 "QueueName" : { "Ref" : "SqsQueueName" }
             }
+        },
+        "LambdaIamRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "RoleName" : "ee-read-hash-file-role-1",
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": { "Service": "lambda.amazonaws.com" },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "ee-read-hash-file-policy-1",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "logs:*",
+                                        "s3:Get*",
+                                        "sqs:*",
+                                        "s3:List*"
+                                    ],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "LambdaSendToSqs": {
+            "Type" : "AWS::Lambda::Function",
+            "Properties" : {
+                "Code" : {
+                    "S3Bucket" : { "Ref" : "CodeRepoS3Bucket" },
+                    "S3Key" : { "Ref" : "CodeRepoS3Key" }
+                },
+                "Description" : "Sends hashes as messages to an SQS queue",
+                "Environment" : {
+                    "Variables" : { "queueUrl" : { "Ref" : "SqsQueue" } }
+                  },
+                "FunctionName" : "ee-read-hash-file-1",
+                "Handler" : "lambda_function.lambda_handler",
+                "Role" : {"Fn::GetAtt" : [ "LambdaIamRole", "Arn"] },
+                "Runtime" : "python3.8"
+            }
         }         
     },                 
     "Outputs" : {
@@ -126,6 +189,10 @@
         "SQSqueueUrl": {
             "Description": "SQS queue URL",
             "Value" : { "Ref" : "SqsQueue" }
-        }
+        },
+        "LambdaSendToSqsQueue": {
+            "Description": "Lambda function that send hashes to the SQS queue",
+            "Value" : { "Ref" : "LambdaSendToSqs" }
+        } 
     }
 }
