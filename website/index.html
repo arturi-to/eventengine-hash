@@ -6,7 +6,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>AWS STP Containers Training</title>
+    <title>AWS Event Engine Hash Tool</title>
 
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/unicons.css">
@@ -32,16 +32,18 @@ LATAM Parter Training Team \m/
                 <div class="col-lg-7 col-md-12 col-12 d-flex align-items-center">
                     <div class="about-text">
                         <h1 class="animated animated-text">
-                            <span class="mr-2">Welcome to the STP Training "Containers on AWS"</span>
+                            <span class="mr-2">Hash retrieval tool</span>
                         </h1>
-                        <p>Para obtener su hash de acceso al laboratorio introduzca el correo electrónico utilizado para registrarse al entrenamiento</p>
+                        <p>Please provide you email</p>
                         <body>
                             <div id="textToSynth">
                               <input autofocus size="23" type="text" id="textEntry" value=""/>
-                              <button class="btn default" onClick="getHash()">Enviar</button>
+                              <button class="btn default" onClick="getHash()">Send</button>
                               <p id="result"></p>
                             </div>
-                            <p id="demo"></p>
+                            <p id="demo">
+                                <p style="font-size:20px"></p>
+                            </p>
                         <p> </p>
                     </div>
                 </div>
@@ -87,7 +89,7 @@ LATAM Parter Training Team \m/
                 var value = JSON.stringify(data);
                 const hashvale = JSON.parse(value);
                 hashvalue = hashvale.Messages[0].Body
-                document.getElementById("demo").innerHTML = 'Su hash de acceso al laboratorio es: '+hashvalue;
+                document.getElementById("demo").innerHTML = 'Your lab access hash is: '+hashvalue;
                 msgHandle = hashvale.Messages[0].ReceiptHandle
                 var participantEmail = document.getElementById("textEntry").value;
                 var dynamodbParams = { Item: { "hash": { S: hashvalue }, "email": { S: participantEmail }, }, TableName: dynamoDbTable };
