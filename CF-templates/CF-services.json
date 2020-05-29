@@ -173,7 +173,8 @@
                 "FunctionName" : "ee-read-hash-file-1",
                 "Handler" : "lambda_function.lambda_handler",
                 "Role" : {"Fn::GetAtt" : [ "LambdaIamRole", "Arn"] },
-                "Runtime" : "python3.8"
+                "Runtime" : "python3.8",
+                "Timeout" : 60
             }
         }         
     },                 
