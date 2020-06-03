@@ -87,9 +87,9 @@ Application and all dependencies are included in the 'website' folder of the rep
   
 Instructor needs to update some variables values in the 'index.html' file based on the CloudFormation Output parameters:
 
-- Update line 63 with the 'SQSqueueUrl' key output value. Description: 'SQS queue URL'
-- Update line 64 with the 'DynamoDbHashTable' key output value. Description: 'DynamoDB Table Name'
-- Update line 65 with the 'CognitoIdentityPoolId' key output value. Description: 'Cognito Identity Pool ID'
+- Update line 65 with the 'SQSqueueUrl' key output value. Description: 'SQS queue URL'
+- Update line 66 with the 'DynamoDbHashTable' key output value. Description: 'DynamoDB Table Name'
+- Update line 67 with the 'CognitoIdentityPoolId' key output value. Description: 'Cognito Identity Pool ID'
 
 DEFAULT REGION: ```us-east-1```
 If you are deploying this project in a different region edit line 68 of 'index.html' file
