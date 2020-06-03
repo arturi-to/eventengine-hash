@@ -38,7 +38,7 @@ LATAM Parter Training Team \m/
                         <body>
                             <div id="textToSynth">
                               <input autofocus size="23" type="text" id="textEntry" value=""/>
-                              <button class="btn default" onClick="getHash()">Send</button>
+                              <button class="btn default" onClick="validateEmail()">Send</button>
                               <p id="result"></p>
                             </div>
                             <p id="demo">
@@ -66,22 +66,36 @@ LATAM Parter Training Team \m/
     var dynamoDbTable = 'DynamoDB Table Name' // DynamoDB table [EDIT]
     var cognitoIdPoolId = 'Cognito Identity Pool ID' // Cognito Identity Pool ID [EDIT]
 
-      // Initialize the Amazon Cognito credentials provider
-      AWS.config.region = 'us-east-1'; // Region
-      AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+    // Initialize the Amazon Cognito credentials provider
+    AWS.config.region = 'us-east-1'; // Region
+    AWS.config.credentials = new AWS.CognitoIdentityCredentials({
         IdentityPoolId: cognitoIdPoolId,
-      });
+    });
 
-        // Create an AWS services objects
-        var sqs = new AWS.SQS({apiVersion: '2012-11-05'});
-        var dynamodb = new AWS.DynamoDB();
+    // Create an AWS services objects
+    var sqs = new AWS.SQS({apiVersion: '2012-11-05'});
+    var dynamodb = new AWS.DynamoDB();
         
-            var queueParams = {
-                QueueUrl: sqsQueueUrl, /* required */
-                MaxNumberOfMessages: '1'
-            };
+        var queueParams = {
+            QueueUrl: sqsQueueUrl, /* required */
+            MaxNumberOfMessages: '1'
+        };
 
-            // Function invoked by button click
+        // Function invoked by button click
+        function validateEmail(){
+			var reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+
+			if (reg.test(textEntry.value) == false) 
+			{
+				alert('Invalid Email Address');
+            return false;
+			}
+
+			return getHash();
+
+			}
+
+            // Function invoked by validateEmail
             function getHash() {
                 var hash = sqs.receiveMessage(queueParams, function(err, data) {
                 if (err) console.log(err, err.stack); // an error occurred
