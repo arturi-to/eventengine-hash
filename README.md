@@ -78,7 +78,7 @@ Upload hashes file workflow diagram:
 
 ### Application
 
-Application and all dependencies are included in the 'website' folder of the repo
+Application and all dependencies are included in the 'website' folder of the repo, you need to upload the content to your S3 bucket and asign the right permissions.
 
 - 'index.html' file
 - 'css/' folder
@@ -92,7 +92,7 @@ Instructor needs to update some variables values in the 'index.html' file based 
 - Update line 67 with the 'CognitoIdentityPoolId' key output value. Description: 'Cognito Identity Pool ID'
 
 DEFAULT REGION: ```us-east-1```
-If you are deploying this project in a different region edit line 68 of 'index.html' file
+If you are deploying this project in a different region edit line 70 of 'index.html' file
 
 ### Hosting the App on S3
 
